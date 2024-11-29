@@ -165,28 +165,78 @@ class HotelApp:
         tk.Label(reservation_window, text=f"Room Type: {self.selected_room['room_type']}").pack(pady=5)
         tk.Label(reservation_window, text=f"Price per Night: {self.selected_room['price']}").pack(pady=5)
 
-        tk.Label(reservation_window, text="Guest TC:").pack(pady=5)
-        guest_tc_entry = tk.Entry(reservation_window)
-        guest_tc_entry.pack(pady=5)
+        # Guest details
+        guest_frame = ttk.Frame(reservation_window)
+        guest_frame.pack(fill='x', pady=5)
 
-        tk.Label(reservation_window, text="Guest Name:").pack(pady=5)
-        guest_name_entry = tk.Entry(reservation_window)
-        guest_name_entry.pack(pady=5)
+        ttk.Label(guest_frame, text="Guest TC:").grid(row=0, column=0, padx=5, pady=5)
+        guest_tc_entry = tk.Entry(guest_frame)
+        guest_tc_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        tk.Label(reservation_window, text="Guest Surname:").pack(pady=5)
-        guest_surname_entry = tk.Entry(reservation_window)
-        guest_surname_entry.pack(pady=5)
+        ttk.Label(guest_frame, text="Guest Name:").grid(row=1, column=0, padx=5, pady=5)
+        guest_name_entry = tk.Entry(guest_frame)
+        guest_name_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        # Add dependents logic
-        dependents = []
+        ttk.Label(guest_frame, text="Guest Surname:").grid(row=2, column=0, padx=5, pady=5)
+        guest_surname_entry = tk.Entry(guest_frame)
+        guest_surname_entry.grid(row=2, column=1, padx=5, pady=5)
 
+        ttk.Label(guest_frame, text="Email:").grid(row=3, column=0, padx=5, pady=5)
+        email_entry = tk.Entry(guest_frame)
+        email_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        ttk.Label(guest_frame, text="Phone Number:").grid(row=4, column=0, padx=5, pady=5)
+        phone_entry = tk.Entry(guest_frame)
+        phone_entry.grid(row=4, column=1, padx=5, pady=5)
+
+        ttk.Label(guest_frame, text="Gender:").grid(row=5, column=0, padx=5, pady=5)
+        gender_combo = ttk.Combobox(guest_frame, values=["M", "F"], state="readonly")
+        gender_combo.grid(row=5, column=1, padx=5, pady=5)
+
+        ttk.Label(guest_frame, text="Birth Date:").grid(row=6, column=0, padx=5, pady=5)
+        birth_date_entry = DateEntry(guest_frame, width=12)
+        birth_date_entry.grid(row=6, column=1, padx=5, pady=5)
+
+        # Payment details
+        payment_frame = ttk.Frame(reservation_window)
+        payment_frame.pack(fill='x', pady=5)
+
+        ttk.Label(payment_frame, text="Payment Method:").grid(row=0, column=0, padx=5, pady=5)
+        payment_method_combo = ttk.Combobox(payment_frame, values=["Credit Card", "Cash", "Bank Transfer", "Online Payment"])
+        payment_method_combo.grid(row=0, column=1, padx=5, pady=5)
+
+        # Calculate total amount dynamically
+        total_amount_label = tk.Label(payment_frame, text="Total Amount: 0 TL")
+        total_amount_label.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
+
+        # Calculate total when dates or dependents change
+        def update_total():
+            try:
+                check_in = self.check_in_entry.get_date()
+                check_out = self.check_out_entry.get_date()
+                num_nights = (check_out - check_in).days
+                total = self.selected_room["price"] * num_nights
+                total_amount_label.configure(text=f"Total Amount: {total} TL ({num_nights} days)")
+            except Exception as e:
+                print(f"Error calculating total: {e}")
+                total_amount_label.configure(text="Total Amount: 0 TL")
+
+        self.check_in_entry.bind("<<DateEntrySelected>>", lambda e: update_total())
+        self.check_out_entry.bind("<<DateEntrySelected>>", lambda e: update_total())
+
+        # Complete reservation button
         def complete_reservation():
             # Collect reservation data
+            num_guests = 1 + len(self.dependent_entries)  # 1 for the main guest, +1 for each dependent
             reservation_data = {
                 "main_guest": {
                     "tc": guest_tc_entry.get(),
                     "name": guest_name_entry.get(),
                     "surname": guest_surname_entry.get(),
+                    "email": email_entry.get(),
+                    "phone": phone_entry.get(),
+                    "gender": gender_combo.get(),
+                    "birth_date": birth_date_entry.get_date(),  # Birth date added
                 },
                 "check_in": self.check_in_entry.get_date(),
                 "check_out": self.check_out_entry.get_date(),
@@ -194,7 +244,13 @@ class HotelApp:
                     "room_id": self.selected_room["room_id"],
                     "price": self.selected_room["price"],
                 },
-                "dependents": dependents  # Ensure dependents are always included
+                "payment": {
+                    "method": payment_method_combo.get(),
+                    "amount": total_amount_label.cget("text").split(":")[1].strip().split()[0],
+                    "date": datetime.now().date(),
+                },
+                "dependents": [],  # Empty list for dependents
+                "num_guests": num_guests,
             }
 
             # Call the make_reservation function
@@ -209,18 +265,73 @@ class HotelApp:
 
     def cancel_reservation(self):
         # Cancel reservation logic
-        pass
+        cancel_window = tk.Toplevel(self.root)
+        cancel_window.title("Cancel Reservation")
+        cancel_window.geometry("400x300")
+
+        tk.Label(cancel_window, text="Enter Reservation ID:").pack(pady=10)
+        reservation_id_entry = tk.Entry(cancel_window)
+        reservation_id_entry.pack(pady=5)
+
+        tk.Label(cancel_window, text="Enter Guest TC:").pack(pady=10)
+        guest_id_entry = tk.Entry(cancel_window)
+        guest_id_entry.pack(pady=5)
+
+        def cancel():
+            reservation_id = reservation_id_entry.get().strip()
+            guest_id = guest_id_entry.get().strip()
+
+            if reservation_id and guest_id:
+                print(f"Attempting to cancel reservation. ID: {reservation_id}, Guest ID: {guest_id}")
+                result = cancel_reservation(reservation_id, guest_id)
+                if result["success"]:
+                    messagebox.showinfo("Success", result["message"])
+                    cancel_window.destroy()
+                else:
+                    messagebox.showerror("Error", result["message"])
+            else:
+                messagebox.showerror("Error", "Please enter both Reservation ID and Guest ID")
+
+        tk.Button(cancel_window, text="Cancel Reservation", command=cancel).pack(pady=20)
 
     def get_reservation_info(self):
         # Get reservation info logic
-        pass
+        info_window = tk.Toplevel(self.root)
+        info_window.title("Get Reservation Info")
+        info_window.geometry("400x300")
 
+        tk.Label(info_window, text="Enter Reservation ID:").pack(pady=10)
+        reservation_id_entry = tk.Entry(info_window)
+        reservation_id_entry.pack(pady=5)
+
+        tk.Label(info_window, text="Enter Guest ID:").pack(pady=10)
+        guest_id_entry = tk.Entry(info_window)
+        guest_id_entry.pack(pady=5)
+
+        def fetch_info():
+            reservation_id = reservation_id_entry.get()
+            guest_id = guest_id_entry.get()
+
+            if reservation_id and guest_id:
+                reservation_info = fetch_reservation_details(reservation_id, guest_id)
+                if reservation_info:
+                    info_text = f"Reservation ID: {reservation_info['reservation_id']}\n"
+                    info_text += f"Hotel: {reservation_info['hotel_name']}\n"
+                    info_text += f"Check-in: {reservation_info['check_in']}\n"
+                    info_text += f"Check-out: {reservation_info['check_out']}\n"
+                    info_text += f"Status: {'Canceled' if reservation_info['is_canceled'] else 'Active'}"
+                    messagebox.showinfo("Reservation Info", info_text)
+                else:
+                    messagebox.showerror("Error", "Reservation not found")
+            else:
+                messagebox.showerror("Error", "Please enter both Reservation ID and Guest ID")
+
+        tk.Button(info_window, text="Get Reservation Info", command=fetch_info).pack(pady=20)
 
 def main():
     root = tk.Tk()
     app = HotelApp(root)
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
