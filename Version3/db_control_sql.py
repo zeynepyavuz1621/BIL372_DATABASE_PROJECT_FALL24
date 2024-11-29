@@ -295,40 +295,52 @@ def fetch_reservation_details(reservation_id, customer_tc):
 
     
 
-def cancel_reservation(reservation_id, guest_id):
+import sqlite3
+from datetime import datetime
+
+def cancel_reservation(reservation_id, guest_tc):
     conn = None
     try:
-        conn = connect_db()
+        conn = connect_db()  # Assuming connect_db() is defined to connect to your DB
         cursor = conn.cursor()
+
         # Enable foreign keys
         cursor.execute("PRAGMA foreign_keys = ON")
+
         # Start transaction
         cursor.execute("BEGIN TRANSACTION")
-        # Check if reservation exists and is not already cancelled
+
+        # Check if reservation exists and is not already cancelled, using guest_tc
         cursor.execute("""
             SELECT r.*, rm.price_per_night
             FROM reservations r
             JOIN rooms rm ON r.room_id = rm.room_id
-            WHERE r.reservation_id = ? AND r.guest_id = ? AND r.is_canceled = 0
-        """, (reservation_id, guest_id))
+            JOIN guests g ON r.guest_id = g.guest_id
+            WHERE r.reservation_id = ? AND g.guest_tc = ? AND r.is_canceled = 0
+        """, (reservation_id, guest_tc))
+
         reservation = cursor.fetchone()
+
         if not reservation:
             return {
                 'success': False,
                 'message': "Reservation not found or already cancelled."
             }
+
         # Calculate cancellation fee (20% of total amount)
         arrival_date = datetime.strptime(reservation[1], '%Y-%m-%d').date()
         departure_date = datetime.strptime(reservation[2], '%Y-%m-%d').date()
         stay_duration = (departure_date - arrival_date).days
-        total_amount = reservation[-1] * stay_duration # price_per_night * duration
+        total_amount = reservation[-1] * stay_duration  # price_per_night * duration
         cancellation_fee = total_amount * 0.2
-        # Update reservation status
+
+        # Update reservation status to cancelled using guest_tc
         cursor.execute("""
             UPDATE reservations
             SET is_canceled = 1
-            WHERE reservation_id = ? AND guest_id = ?
-        """, (reservation_id, guest_id))
+            WHERE reservation_id = ? AND guest_id = (SELECT guest_id FROM guests WHERE guest_tc = ?)
+        """, (reservation_id, guest_tc))
+
         # Add cancellation payment record
         cursor.execute("""
             INSERT INTO payments (
@@ -340,21 +352,25 @@ def cancel_reservation(reservation_id, guest_id):
             cancellation_fee,
             datetime.now().date(),
             'Cancelled',
-            reservation[9], # room_id
+            reservation[9],  # room_id
             reservation_id
         ))
+
         # Make room available again
         cursor.execute("""
             UPDATE rooms
             SET is_available = 1
             WHERE room_id = ?
-        """, (reservation[9],)) # room_id
+        """, (reservation[9],))  # room_id
+
         conn.commit()
+
         return {
             'success': True,
             'message': f"Reservation cancelled successfully.\nCancellation fee: {cancellation_fee:.2f} TL",
             'cancellation_fee': cancellation_fee
         }
+
     except sqlite3.Error as e:
         print(f"Database error in cancel_reservation: {e}")
         if conn:
@@ -363,6 +379,8 @@ def cancel_reservation(reservation_id, guest_id):
             'success': False,
             'message': f"An error occurred: {str(e)}"
         }
+
     finally:
         if conn:
             conn.close()
+
