@@ -171,48 +171,58 @@ class HotelApp:
         ttk.Label(guest_frame, text="Guest TC:").grid(row=0, column=0, padx=5, pady=5)
         guest_tc_entry = tk.Entry(guest_frame)
         guest_tc_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.guest_entries['tc'] = guest_tc_entry;
+        self.guest_entries['tc'] = guest_tc_entry
 
         ttk.Label(guest_frame, text="Guest Name:").grid(row=1, column=0, padx=5, pady=5)
         guest_name_entry = tk.Entry(guest_frame)
         guest_name_entry.grid(row=1, column=1, padx=5, pady=5)
-        self.guest_entries['name'] = guest_name_entry;
+        self.guest_entries['name'] = guest_name_entry
 
         ttk.Label(guest_frame, text="Guest Surname:").grid(row=2, column=0, padx=5, pady=5)
         guest_surname_entry = tk.Entry(guest_frame)
         guest_surname_entry.grid(row=2, column=1, padx=5, pady=5)
-        self.guest_entries['surname'] = guest_surname_entry;
+        self.guest_entries['surname'] = guest_surname_entry
 
         ttk.Label(guest_frame, text="Email:").grid(row=3, column=0, padx=5, pady=5)
         email_entry = tk.Entry(guest_frame)
         email_entry.grid(row=3, column=1, padx=5, pady=5)
-        self.guest_entries['email'] = email_entry;
+        self.guest_entries['email'] = email_entry
 
         ttk.Label(guest_frame, text="Phone Number:").grid(row=4, column=0, padx=5, pady=5)
         phone_entry = tk.Entry(guest_frame)
         phone_entry.grid(row=4, column=1, padx=5, pady=5)
-        self.guest_entries['phone'] = phone_entry;
+        self.guest_entries['phone'] = phone_entry
 
         ttk.Label(guest_frame, text="Gender:").grid(row=5, column=0, padx=5, pady=5)
         gender_combo = ttk.Combobox(guest_frame, values=["M", "F"], state="readonly")
         gender_combo.grid(row=5, column=1, padx=5, pady=5)
-        self.guest_entries['gender'] = gender_combo;
+        self.guest_entries['gender'] = gender_combo
 
         ttk.Label(guest_frame, text="Birth Date:").grid(row=6, column=0, padx=5, pady=5)
         birth_date_entry = DateEntry(guest_frame, width=12)
         birth_date_entry.grid(row=6, column=1, padx=5, pady=5)
-        self.guest_entries['birth_date'] = birth_date_entry;
+        self.guest_entries['birth_date'] = birth_date_entry
 
-
-        # Dependents section
+        # Dependents section with scrollable functionality
         dependent_frame = ttk.Frame(reservation_window)
-        dependent_frame.pack(fill='x', pady=5)
-        # Dependents container
-        self.dependents_container = ttk.Frame(dependent_frame)
-        self.dependents_container.pack(fill='both', expand=True, padx=10, pady=5)
-        # Add dependent button
-        ttk.Button(dependent_frame, text="Add Dependent", command=self.add_dependent_form).pack(pady=5)
+        dependent_frame.pack(fill='both', expand=True, pady=5)
 
+        # Canvas and Scrollbar for dependents
+        dependents_canvas = tk.Canvas(dependent_frame)
+        dependents_canvas.pack(side="left", fill="both", expand=True)
+
+        scrollbar = ttk.Scrollbar(dependent_frame, orient="vertical", command=dependents_canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        dependents_canvas.configure(yscrollcommand=scrollbar.set)
+        dependents_canvas.bind("<Configure>", lambda e: dependents_canvas.configure(scrollregion=dependents_canvas.bbox("all")))
+
+        self.dependents_container = ttk.Frame(dependents_canvas)
+        dependents_canvas.create_window((0, 0), window=self.dependents_container, anchor="nw")
+
+        # Add dependent button
+        self.counter = 0
+        ttk.Button(dependent_frame, text="Add Dependent", command=self.add_dependent_form).pack(pady=5)
 
         # Payment details
         payment_frame = ttk.Frame(reservation_window)
@@ -228,54 +238,83 @@ class HotelApp:
 
         # Complete reservation button
         ttk.Button(reservation_window, text="Complete Reservation", 
-                  command=self.complete_reservation).pack(pady=10)
+                command=self.complete_reservation).pack(pady=10)
 
         # Set up event bindings
         self.setup_event_bindings()
         # Calculate initial total
         self.update_total()
 
+
     def add_dependent_form(self):
-        dependent_frame = ttk.LabelFrame(self.dependents_container, 
-                                       text=f"Dependent {len(self.dependent_entries) + 1}")
-        dependent_frame.pack(fill='x', pady=5)
-
-        entries = {}
-        fields = [
-            ('TC Number:', 'tc'),
-            ('Name:', 'name'),
-            ('Last Name:','last_name'),
-            ('Birth Date:', 'birth_date'),
-            ('Gender:', 'gender'),
-            ('Relation Type:', 'relation_type')
-        ]
-
-        for i, (label, field) in enumerate(fields):
-            ttk.Label(dependent_frame, text=label).grid(row=i, column=0, padx=5, pady=2, sticky='e')
+        try:
+            total_allowed_guests = int(self.guest_number_entry.get())
             
-            if field == 'birth_date':
-                entries[field] = DateEntry(dependent_frame, width=12)
-            elif field == 'gender':
-                entries[field] = ttk.Combobox(dependent_frame, values=['M', 'F'], 
-                                            state='readonly', width=15)
-            elif field == 'relation_type':
-                entries[field] = ttk.Combobox(dependent_frame, values=['family', 'friend'], 
-                                            state='readonly', width=15)
-            else:
-                entries[field] = ttk.Entry(dependent_frame, width=20)
+            self.counter += 1
+            if self.counter >= total_allowed_guests:
+                self.counter -= 1
+                # Use a simple warning message that doesn't affect window state
+                messagebox.showwarning("Warning", f"You cannot add more than {total_allowed_guests-1} dependents!")
+                return
             
-            entries[field].grid(row=i, column=1, padx=5, pady=2, sticky='w')
+            # Rest of the existing add_dependent_form method remains the same
+            # Create a LabelFrame for each dependent within the scrollable container
+            dependent_frame = ttk.LabelFrame(self.dependents_container, 
+                                            text=f"Dependent {len(self.dependent_entries) + 1}")
+            dependent_frame.pack(fill='x', pady=5)
 
-        ttk.Button(dependent_frame, text="Remove", 
-                  command=lambda: self.remove_dependent(dependent_frame)).grid(
-                      row=len(fields), column=0, columnspan=2, pady=5)
+            # Define entries and fields
+            entries = {}
+            fields = [
+                ('TC Number:', 'tc'),
+                ('Name:', 'name'),
+                ('Last Name:', 'last_name'),
+                ('Birth Date:', 'birth_date'),
+                ('Gender:', 'gender'),
+                ('Relation Type:', 'relation_type')
+            ]
 
-        self.dependent_entries.append({
-            'frame': dependent_frame,
-            'entries': entries
-        })
-        
-        self.update_total()
+            # Loop through fields and create corresponding widgets
+            for i, (label, field) in enumerate(fields):
+                ttk.Label(dependent_frame, text=label).grid(row=i, column=0, padx=5, pady=2, sticky='e')
+                
+                if field == 'birth_date':
+                    entries[field] = DateEntry(dependent_frame, width=12)
+                elif field == 'gender':
+                    entries[field] = ttk.Combobox(dependent_frame, values=['M', 'F'], 
+                                                state='readonly', width=15)
+                elif field == 'relation_type':
+                    entries[field] = ttk.Combobox(dependent_frame, values=['family', 'friend'], 
+                                                state='readonly', width=15)
+                else:
+                    entries[field] = ttk.Entry(dependent_frame, width=20)
+                
+                entries[field].grid(row=i, column=1, padx=5, pady=2, sticky='w')
+
+            # Remove button to delete dependent
+            ttk.Button(dependent_frame, text="Remove", 
+                    command=lambda: self.remove_dependent(dependent_frame)).grid(
+                        row=len(fields), column=0, columnspan=2, pady=5)
+
+            # Add dependent entries to the list
+            self.dependent_entries.append({
+                'frame': dependent_frame,
+                'entries': entries
+            })
+            
+            # Dynamically update the scroll region for the canvas
+            self.dependents_container.update_idletasks()  # Ensure layout is updated
+            dependents_canvas = self.dependents_container.master  # Get the Canvas widget
+            dependents_canvas.configure(scrollregion=dependents_canvas.bbox("all"))  # Adjust scroll region
+
+            # Update total reservation cost if needed
+            self.update_total()
+
+        except Exception as e:
+            # Catch any potential errors without closing the window
+            tk.messagebox.showwarning("Warning", f"An error occurred: {str(e)}")
+
+
 
     def remove_dependent(self, frame_to_remove):
         self.dependent_entries = [entry for entry in self.dependent_entries 
