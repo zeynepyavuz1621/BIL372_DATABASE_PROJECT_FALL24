@@ -317,6 +317,7 @@ class HotelApp:
 
 
     def remove_dependent(self, frame_to_remove):
+        self.counter -= 1
         self.dependent_entries = [entry for entry in self.dependent_entries 
                                 if entry['frame'] != frame_to_remove]
         frame_to_remove.destroy()
