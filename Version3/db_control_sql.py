@@ -6,7 +6,7 @@ from datetime import datetime
 def connect_db():
     return sqlite3.connect('HotelManagement.db')
 
-def get_filtered_hotels(check_in, check_out, hotel_type="All", city="All", price_min=0, price_max=float('inf')):
+def get_filtered_hotels(check_in, check_out, hotel_type="All", city="All", price_min=0, price_max=float('inf'), guest_number=1):
     conn = None
     try:
         conn = sqlite3.connect('HotelManagement.db', timeout=20)
@@ -18,7 +18,8 @@ def get_filtered_hotels(check_in, check_out, hotel_type="All", city="All", price
                 h.type,
                 r.type as room_type,
                 r.price_per_night,
-                r.room_id
+                r.room_id,
+                r.r_capacity
             FROM hotels h
             JOIN rooms r ON h.hotel_id = r.hotel_id
             LEFT JOIN reservations res ON r.room_id = res.room_id
@@ -42,9 +43,13 @@ def get_filtered_hotels(check_in, check_out, hotel_type="All", city="All", price
         if price_max < float('inf'):
             query += " AND r.price_per_night <= ?"
             params.append(price_max)
-
-        query += " GROUP BY h.hotel_name,r.type"
         
+        # Add the guest_number filter
+        query += " AND r.r_capacity >= ?"
+        params.append(guest_number)
+
+        query += " GROUP BY h.hotel_name, r.type"
+
         cursor.execute(query, params)
         return cursor.fetchall()
 
@@ -55,8 +60,7 @@ def get_filtered_hotels(check_in, check_out, hotel_type="All", city="All", price
     finally:
         if conn:
             conn.close()
-import sqlite3
-from datetime import datetime
+
 
 def make_reservation(reservation_data):
     conn = None
