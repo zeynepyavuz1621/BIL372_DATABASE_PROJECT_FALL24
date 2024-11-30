@@ -203,6 +203,17 @@ class HotelApp:
         birth_date_entry.grid(row=6, column=1, padx=5, pady=5)
         self.guest_entries['birth_date'] = birth_date_entry;
 
+
+        # Dependents section
+        dependent_frame = ttk.Frame(reservation_window)
+        dependent_frame.pack(fill='x', pady=5)
+        # Dependents container
+        self.dependents_container = ttk.Frame(dependent_frame)
+        self.dependents_container.pack(fill='both', expand=True, padx=10, pady=5)
+        # Add dependent button
+        ttk.Button(dependent_frame, text="Add Dependent", command=self.add_dependent_form).pack(pady=5)
+
+
         # Payment details
         payment_frame = ttk.Frame(reservation_window)
         payment_frame.pack(fill='x', pady=5)
@@ -222,6 +233,59 @@ class HotelApp:
         # Set up event bindings
         self.setup_event_bindings()
         # Calculate initial total
+        self.update_total()
+
+    def add_dependent_form(self):
+        dependent_frame = ttk.LabelFrame(self.dependents_container, 
+                                       text=f"Dependent {len(self.dependent_entries) + 1}")
+        dependent_frame.pack(fill='x', pady=5)
+
+        entries = {}
+        fields = [
+            ('TC Number:', 'tc'),
+            ('Name:', 'name'),
+            ('Last Name:','last_name'),
+            ('Birth Date:', 'birth_date'),
+            ('Gender:', 'gender'),
+            ('Relation Type:', 'relation_type')
+        ]
+
+        for i, (label, field) in enumerate(fields):
+            ttk.Label(dependent_frame, text=label).grid(row=i, column=0, padx=5, pady=2, sticky='e')
+            
+            if field == 'birth_date':
+                entries[field] = DateEntry(dependent_frame, width=12)
+            elif field == 'gender':
+                entries[field] = ttk.Combobox(dependent_frame, values=['M', 'F'], 
+                                            state='readonly', width=15)
+            elif field == 'relation_type':
+                entries[field] = ttk.Combobox(dependent_frame, values=['family', 'friend'], 
+                                            state='readonly', width=15)
+            else:
+                entries[field] = ttk.Entry(dependent_frame, width=20)
+            
+            entries[field].grid(row=i, column=1, padx=5, pady=2, sticky='w')
+
+        ttk.Button(dependent_frame, text="Remove", 
+                  command=lambda: self.remove_dependent(dependent_frame)).grid(
+                      row=len(fields), column=0, columnspan=2, pady=5)
+
+        self.dependent_entries.append({
+            'frame': dependent_frame,
+            'entries': entries
+        })
+        
+        self.update_total()
+
+    def remove_dependent(self, frame_to_remove):
+        self.dependent_entries = [entry for entry in self.dependent_entries 
+                                if entry['frame'] != frame_to_remove]
+        frame_to_remove.destroy()
+        
+        # Update numbering
+        for i, entry in enumerate(self.dependent_entries):
+            entry['frame'].configure(text=f"Dependent {i + 1}")
+        
         self.update_total()
 
     def setup_event_bindings(self):
