@@ -709,8 +709,8 @@ class ReservationPage(ttk.Frame):
         
         # Comment section
         self.setup_comment_section()
-        self.hotel_image_frame = ttk.Frame(self.main_container)
-        self.hotel_image_frame.pack(fill='x', padx=10, pady=10)
+       # self.hotel_image_frame = ttk.Frame(self.main_container)
+        #self.hotel_image_frame.pack(fill='x', padx=10, pady=10)
 
     def on_frame_configure(self, event=None):
         """Reset the scroll region to encompass the inner frame"""
@@ -928,8 +928,8 @@ class ReservationPage(ttk.Frame):
             )
             self.load_comments()
             self.update_total()
-            self.setup_room_info()
-            self.setup_room_image()
+            #self.setup_room_info()
+            #self.setup_room_image()
         else:
             # Clear labels if no room is selected
             self.hotel_name_label.config(text="")
@@ -1091,7 +1091,7 @@ class ReservationPage(ttk.Frame):
             font=('Helvetica', 12, 'bold'),
             foreground='#FF5A5F'
         )
-
+    '''
     def setup_room_image(self):
         # Clear any existing image
         for widget in self.hotel_image_frame.winfo_children():
@@ -1140,7 +1140,7 @@ class ReservationPage(ttk.Frame):
             justify='center'
         )
         placeholder_label.pack(pady=10)
-    
+     ''' 
 
 
 class AddCommentPage(ttk.Frame):
