@@ -1,0 +1,281 @@
+{
+  "hotel_images": [
+    {
+      "hotel_id": 1,
+      "image_id": 1001,
+      "image_path": "images\\hotel_1\\1001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 1,
+      "image_id": 1002,
+      "image_path": "images\\hotel_1\\1002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 1,
+      "image_id": 1003,
+      "image_path": "images\\hotel_1\\1003.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 1,
+      "image_id": 1004,
+      "image_path": "images\\hotel_1\\1004.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 1,
+      "image_id": 1005,
+      "image_path": "images\\hotel_1\\breakfast\\1005.jpg",
+      "image_type": "breakfast"
+    },
+    {
+      "hotel_id": 2,
+      "image_id": 2001,
+      "image_path": "images\\hotel_2\\2001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 2,
+      "image_id": 2002,
+      "image_path": "images\\hotel_2\\2002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 2,
+      "image_id": 2003,
+      "image_path": "images\\hotel_2\\2003.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 2,
+      "image_id": 2004,
+      "image_path": "images\\hotel_2\\2004.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 2,
+      "image_id": 2005,
+      "image_path": "images\\hotel_2\\2005.jpg",
+      "image_type": "breakfast"
+    },
+    {
+      "hotel_id": 3,
+      "image_id": 3001,
+      "image_path": "images\\hotel_3\\3001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 3,
+      "image_id": 3002,
+      "image_path": "images\\hotel_3\\3002.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 3,
+      "image_id": 3003,
+      "image_path": "images\\hotel_3\\pool\\3003.jpg",
+      "image_type": "room"
+    },
+  
+    {
+      "hotel_id": 4,
+      "image_id": 4001,
+      "image_path": "images\\hotel_4\\4001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 4,
+      "image_id": 4002,
+      "image_path": "images\\hotel_4\\4002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 4,
+      "image_id": 4003,
+      "image_path": "images\\hotel_4\\4003.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 4,
+      "image_id": 4004,
+      "image_path": "images\\hotel_4\\4004.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 4,
+      "image_id": 4005,
+      "image_path": "images\\hotel_4\\4005.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 5,
+      "image_id": 5001,
+      "image_path": "images\\hotel_5\\5001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 5,
+      "image_id": 5002,
+      "image_path": "images\\hotel_5\\5002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 5,
+      "image_id": 5003,
+      "image_path": "images\\hotel_5\\5003.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 5,
+      "image_id": 5004,
+      "image_path": "images\\hotel_5\\5004.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 5,
+      "image_id": 5005,
+      "image_path": "images\\hotel_5\\5005.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 6,
+      "image_id": 6001,
+      "image_path": "images\\hotel_6\\6001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 6,
+      "image_id": 6002,
+      "image_path": "images\\hotel_6\\6002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 6,
+      "image_id": 6003,
+      "image_path": "images\\hotel_6\\6003.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 6,
+      "image_id": 6004,
+      "image_path": "images\\hotel_6\\6004.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 6,
+      "image_id": 6005,
+      "image_path": "images\\hotel_6\\6005.jpg",
+      "image_type": "interior"
+    },
+    {
+      "hotel_id": 7,
+      "image_id": 7001,
+      "image_path": "images\\hotel_7\\7001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 7,
+      "image_id": 7002,
+      "image_path": "images\\hotel_7\\7002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 7,
+      "image_id": 7003,
+      "image_path": "images\\hotel_7\\7003.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 7,
+      "image_id": 7004,
+      "image_path": "images\\hotel_7\\7004.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 8,
+      "image_id": 8001,
+      "image_path": "images\\hotel_8\\8001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 8,
+      "image_id": 8002,
+      "image_path": "images\\hotel_8\\8002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 8,
+      "image_id": 8003,
+      "image_path": "images\\hotel_8\\8004.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 8,
+      "image_id": 8004,
+      "image_path": "images\\hotel_8\\8005.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 9,
+      "image_id": 9001,
+      "image_path": "images\\hotel_9\\9001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 9,
+      "image_id": 9002,
+      "image_path": "images\\hotel_9\\9002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 9,
+      "image_id": 9003,
+      "image_path": "images\\hotel_9\\9003.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 9,
+      "image_id": 9004,
+      "image_path": "images\\hotel_9\\9004.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 9,
+      "image_id": 9005,
+      "image_path": "images\\hotel_9\\9005.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 10,
+      "image_id": 10001,
+      "image_path": "images\\hotel_10\\10001.jpg",
+      "image_type": "exterior"
+    },
+    {
+      "hotel_id": 10,
+      "image_id": 10002,
+      "image_path": "images\\hotel_10\\10002.jpg",
+      "image_type": "room"
+    },
+    {
+      "hotel_id": 10,
+      "image_id": 10003,
+      "image_path": "images\\hotel_10\\10003.jpg",
+      "image_type": "pool"
+    },
+    {
+      "hotel_id": 10,
+      "image_id": 10004,
+      "image_path": "images\\hotel_10\\10004.jpg",
+      "image_type": "restaurant"
+    },
+    {
+      "hotel_id": 10,
+      "image_id": 10005,
+      "image_path": "images\\hotel_10\\10005.jpg",
+      "image_type": "restaurant"
+    }
+  ]
+}

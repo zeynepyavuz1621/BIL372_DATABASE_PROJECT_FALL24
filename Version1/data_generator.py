@@ -5,7 +5,7 @@ import csv
 import os
 import json
 import shutil
-#from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 # Türkçe fake data üreteci
 fake = Faker('tr_TR')
@@ -449,25 +449,90 @@ class HotelDataGenerator:
 
         print(f"Completed generating {self.num_guests} guests")
 
+
+
+    def generate_hotel_name(self, city, used_names):
+        luxury_prefixes = {
+            "The Ritz", "Palace", "Grand", "Royal", "Imperial", 
+            "Waldorf", "Four Seasons", "St. Regis"
+        }
+        location_features = {
+            "Beachfront", "Oceanview", "Bay", "Seaside", "Marina", 
+            "Resort & Spa", "Hotel & Suites", "Beach Resort"
+        }
+        
+        while True:
+            name_patterns = [
+                f"{random.choice(list(luxury_prefixes))} {city}",
+                f"{city} {random.choice(list(luxury_prefixes))}",
+                f"{random.choice(list(luxury_prefixes))} {random.choice(list(location_features))}"
+            ]
+            hotel_name = f"{random.choice(name_patterns)} {random.choice(['Otel', 'Hotel', 'Resort', 'Suites'])}"
+            
+            if hotel_name not in used_names:
+                used_names.add(hotel_name)
+                return hotel_name
+
+    def generate_address(self, city):
+        street_types = {
+            "Dubai": ["Sheikh Zayed Road", "Jumeirah Beach Road", "Al Wasl Road", "Dubai Marina"],
+            "Miami": ["Ocean Drive", "Collins Avenue", "Brickell Avenue", "Palm Boulevard"],
+            "Cancun": ["Kukulcan Boulevard", "Tulum Avenue", "Costa Mujeres", "Zona Hotelera"],
+            "Bali": ["Sunset Road", "Kuta Beach Road", "Nusa Dua Beach", "Seminyak Beach"],
+            "Phuket": ["Thalang Road", "Beach Road", "Paradise Beach", "Rawai Beach"],
+            "Barcelona": ["Las Ramblas", "Passeig de Gracia", "Barceloneta Beach", "Marina Bay"],
+            "Maldives": ["Ocean Front", "Coral Road", "Paradise Island", "Palm Beach"],
+            "Hawaii": ["Kalakaua Avenue", "Waikiki Beach", "Sunset Beach", "Palm Drive"],
+            "Nice": ["Promenade des Anglais", "Boulevard Victor Hugo", "Rue de France", "Avenue Jean Médecin"],
+            "Gold Coast": ["Surfers Paradise", "Main Beach Parade", "Marine Parade", "The Esplanade"]
+        }
+        
+        
+    def generate_address(self, city,used_addresses):
+        street_types = {
+            "Dubai": ["Sheikh Zayed Road", "Jumeirah Beach Road", "Al Wasl Road", "Dubai Marina"],
+            "Miami": ["Ocean Drive", "Collins Avenue", "Brickell Avenue", "Palm Boulevard"],
+            "Cancun": ["Kukulcan Boulevard", "Tulum Avenue", "Costa Mujeres", "Zona Hotelera"],
+            "Bali": ["Sunset Road", "Kuta Beach Road", "Nusa Dua Beach", "Seminyak Beach"],
+            "Phuket": ["Thalang Road", "Beach Road", "Paradise Beach", "Rawai Beach"],
+            "Barcelona": ["Las Ramblas", "Passeig de Gracia", "Barceloneta Beach", "Marina Bay"],
+            "Maldives": ["Ocean Front", "Coral Road", "Paradise Island", "Palm Beach"],
+            "Hawaii": ["Kalakaua Avenue", "Waikiki Beach", "Sunset Beach", "Palm Drive"],
+            "Nice": ["Promenade des Anglais", "Boulevard Victor Hugo", "Rue de France", "Avenue Jean Médecin"],
+            "Gold Coast": ["Surfers Paradise", "Main Beach Parade", "Marine Parade", "The Esplanade"]
+        }
+        
+        while True:
+            street = random.choice(street_types[city])
+            number = random.randint(1, 999)
+            address = f"{number} {street}, {city}"
+            
+            if address not in used_addresses:
+                used_addresses.add(address)
+                return address
+
+
     def generate_hotels(self):
         print(f"Generating {self.num_hotels} hotels...")
         hotel_types = ['Lüks', 'İş', 'Resort', 'Butik', 'Ekonomik']
-        cities = ['İstanbul', 'Antalya', 'İzmir', 'Muğla', 'Ankara', 'Bursa', 'Aydın', 'Mersin']
-        
-        # En eski otel açılış tarihi 20 yıl önce, en yenisi 6 ay önce olsun
-        oldest_date = datetime.now().date() - timedelta(days=365*20)
-        newest_date = datetime.now().date() - timedelta(days=180)
-        
+        cities = ["Dubai", "Miami", "Cancun", "Bali", "Phuket", 
+                    "Barcelona", "Maldives", "Hawaii", "Nice", "Gold Coast"]
+        used_names = set()
+        used_addresses=set()
+
         for i in range(self.num_hotels):
             city = random.choice(cities)
             hotel = {
                 'hotel_id': i + 1,
-                'hotel_name': f"{fake.company()} {random.choice(['Otel', 'Hotel', 'Resort', 'Suites'])}",
+                'hotel_name': self.generate_hotel_name(city, used_names),
                 'room_num': random.randint(20, 200),
-                'location': f"{fake.street_address()}, {city}",
+                'location': self.generate_address(city,used_addresses),
                 'city': city,
                 'type': random.choice(hotel_types),
-                'opening_date': fake.date_between(start_date=oldest_date, end_date=newest_date),
+                'opening_date': fake.date_between(
+                    start_date=datetime.now().date() - timedelta(days=365*20),
+                    end_date=datetime.now().date() - timedelta(days=180)
+                ),
                 'h_capacity': random.randint(40, 400),
                 'rate': round(random.uniform(200.0, 2000.0), 2)
             }
@@ -694,43 +759,37 @@ class HotelDataGenerator:
         print(f"Completed generating {len(self.reservations)} reservations")
 
     def generate_amenity_based_comment(self, hotel_id, stars):
-            """Otelin sahip olduğu özelliklere göre yorum üretir"""
-            hotel_amenities = next(a for a in self.amenities if a['hotel_id'] == hotel_id)
-            
-            comment_parts = []
-            available_features = []
-            
-            # Otelin sahip olduğu özellikleri kontrol et
-            for feature, has_feature in hotel_amenities.items():
-                if feature.startswith('has_') and has_feature:
-                    available_features.append(feature)
-            
-            # Rastgele 2-4 özellik seç
-            selected_features = random.sample(
-                available_features, 
-                min(random.randint(2, 4), len(available_features))
-            )
-            
-            # Genel değerlendirme ekle
-            if stars >= 4:
-                comment_parts.append(random.choice(self.genel_izlenim_pos))
-            else:
-                comment_parts.append(random.choice(self.genel_izlenim_neg))
-            
-            # Seçilen özellikler için yorumlar ekle
+        hotel_amenities = next(a for a in self.amenities if a['hotel_id'] == hotel_id)
+        comment_parts = []
+        available_features = []
+        
+        # Otelin özelliklerini kontrol et
+        for feature, has_feature in hotel_amenities.items():
+            if feature.startswith('has_') and has_feature:
+                available_features.append(feature)
+        
+        # Rastgele 2-4 özellik seç
+        selected_features = random.sample(
+            available_features,
+            min(random.randint(2, 4), len(available_features))
+        )
+        
+        if stars >= 4:
+            comment_parts.append(random.choice(self.genel_izlenim_pos))
+            # Seçilen özellikler için pozitif yorumlar
             for feature in selected_features:
-                if stars >= 3:
-                    comment_parts.append(random.choice(self.feature_based_comments[feature]['pos']))
-                else:
-                    comment_parts.append(random.choice(self.feature_based_comments[feature]['neg']))
-            
-            # Tavsiye ekle
-            if stars >= 4:
-                comment_parts.append(random.choice(self.recommendation_pos))
-            else:
-                comment_parts.append(random.choice(self.recommendation_neg))
-            
-            return ' '.join(comment_parts)
+                comment_parts.append(random.choice(self.feature_based_comments[feature]['pos']))
+            comment_parts.append(random.choice(self.recommendation_pos))
+        elif stars < 3:
+            comment_parts.append(random.choice(self.genel_izlenim_neg))
+            # Seçilen özellikler için negatif yorumlar
+            for feature in selected_features:
+                comment_parts.append(random.choice(self.feature_based_comments[feature]['neg']))
+            comment_parts.append(random.choice(self.recommendation_neg))
+        else:  # 3 yıldız için tek cümle
+            comment_parts.append("Ortalama bir konaklama deneyimiydi.")
+        
+        return ' '.join(comment_parts)
 
     def generate_comments(self):
         print("Generating comments...")
@@ -973,39 +1032,11 @@ class HotelDataGenerator:
         print(f"Created photo directories for {num_hotels} hotels")
         return base_dir
 
-    def generate_photos(self):
-        print("Generating photos...")
-        photo_id = 1
-        base_photos_dir = "hotel_photos"
 
-        for hotel in self.hotels:
-            hotel_photo_dir = os.path.join(base_photos_dir, f"hotel_{hotel['hotel_id']}")
-
-            if os.path.exists(hotel_photo_dir):
-                photo_files = [f for f in os.listdir(hotel_photo_dir) if f.endswith('.jpg')]
-
-                for photo_file in photo_files:
-                    photo = {
-                        'photo_id': photo_id,
-                        'taken_date': fake.date_between(
-                            start_date=hotel['opening_date'],
-                            end_date=min(
-                                datetime.now().date(),
-                                hotel['opening_date'] + timedelta(days=365 * 2)
-                            )
-                        ),
-                        'photo_path': os.path.join(hotel_photo_dir, photo_file),
-                        'hotel_id': hotel['hotel_id']
-                    }
-                    self.photos.append(photo)
-                    photo_id += 1
-
-        print(f"Generated {len(self.photos)} photos")
 
 
     def generate_all(self):
         self.generate_hotels()
-        self.generate_photos()
         self.generate_amenities()
         self.generate_rooms()
         self.generate_guests()
@@ -1040,5 +1071,5 @@ if __name__ == "__main__":
     # Daha dengeli sayılar için
     # Daha dengeli sayılar için
     generator = HotelDataGenerator(num_hotels=10, num_guests=1000)
-    #generator.create_sample_hotel_photos(10)  # Önce fotoları oluştur
+    generator.create_sample_hotel_photos(10)  # Önce fotoları oluştur
     generator.generate_all()

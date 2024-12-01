@@ -1,5 +1,5 @@
 import sqlite3
-
+import json
 def fix_guests_table():
     conn = sqlite3.connect('HotelManagement.db')
     cursor = conn.cursor()
@@ -225,6 +225,86 @@ def fix_rooms_table():
         conn.rollback()
     finally:
         conn.close()
+def fix_comments_table():
+    conn = sqlite3.connect('HotelManagement.db')
+    cursor = conn.cursor()
+    try:
+        # Start transaction
+        cursor.execute("BEGIN TRANSACTION")
+        
+        # Create temporary table with correct structure
+        cursor.execute("""
+            CREATE TABLE comments_new (
+                comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date DATE NOT NULL,
+                content TEXT NOT NULL,
+                num_stars INTEGER NOT NULL,
+                guest_id INTEGER NOT NULL,
+                hotel_id INTEGER NOT NULL,
+                FOREIGN KEY (guest_id) REFERENCES guests(guest_id),
+                FOREIGN KEY (hotel_id) REFERENCES hotels(hotel_id),
+                CHECK(rating >= 1 AND rating <= 5)
+            )
+        """)
+        
+        # Copy data from old table to new table (if it exists)
+        try:
+            cursor.execute("""
+                INSERT INTO comments_new (comment_id, date, content, 
+                    num_stars, guest_id, hotel_id)
+                SELECT comment_id, date, content, num_starts, 
+                    guest_id, hotel_id
+                FROM comments
+            """)
+        except sqlite3.Error:
+            print("No existing comments table found, creating new one...")
+        
+        # Drop old table if it exists
+        cursor.execute("DROP TABLE IF EXISTS comments")
+        
+        # Rename new table to comments
+        cursor.execute("ALTER TABLE comments_new RENAME TO comments")
+        
+        # Create indexes for better performance
+        cursor.execute("CREATE INDEX idx_comment_guest ON comments(guest_id)")
+        cursor.execute("CREATE INDEX idx_comment_hotel ON comments(hotel_id)")
+        cursor.execute("CREATE INDEX idx_comment_date ON comments(date)")
+        
+        # Commit changes
+        conn.commit()
+        print("Successfully restructured comments table")
+        
+    except sqlite3.Error as e:
+        print(f"An error occurred in comments table: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+def import_photos(json_file='hotel_images.json'):
+    """Import photos from JSON file."""
+    conn = sqlite3.connect('HotelManagement.db')
+    cursor = conn.cursor()
+    
+    try:
+        with open(json_file, 'r') as f:
+            data = json.load(f)
+        
+        cursor.executemany("""
+            INSERT OR REPLACE INTO photos 
+            (image_id, hotel_id, image_path, image_type) 
+            VALUES (?, ?, ?, ?)
+        """, [(img['image_id'], img['hotel_id'], img['image_path'], img['image_type']) 
+              for img in data['hotel_images']])
+        
+        conn.commit()
+        print(f"Successfully imported photos from {json_file}")
+        
+    except (sqlite3.Error, FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error importing photos: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     print("Starting database table fixes...")
     
@@ -245,5 +325,11 @@ if __name__ == "__main__":
     
     print("\nChecking final database state...")
     check_database_state()
+
+    print("\nFixing comments table...")
+    fix_comments_table()
+
+    print("\nImporting photos...")
+    import_photos() 
     
     print("\nAll fixes completed!")
