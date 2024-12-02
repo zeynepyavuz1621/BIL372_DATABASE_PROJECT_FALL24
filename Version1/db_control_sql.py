@@ -228,6 +228,80 @@ def connect_db():
     return sqlite3.connect('HotelManagement.db', timeout=20)
 
 
+
+def fetch_guest_id_by_tc(guest_tc):
+    """
+    TC numarasından guest ID'yi bulan fonksiyon
+    """
+    conn = None
+    try:
+        conn = sqlite3.connect('HotelManagement.db', timeout=20)
+        cursor = conn.cursor()
+        
+        query = "SELECT guest_id FROM guests WHERE guest_tc = ?"
+        cursor.execute(query, (guest_tc,))
+        result = cursor.fetchone()
+        
+        return result[0] if result else None
+        
+    except sqlite3.Error as e:
+        print(f"Database error in fetch_guest_id_by_tc: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+def fetch_dependent_details(guest_id):
+    """
+    Guest ID'ye göre dependent bilgilerini getiren fonksiyon
+    """
+    conn = None
+    try:
+        conn = sqlite3.connect('HotelManagement.db', timeout=20)
+        cursor = conn.cursor()
+        
+        query = """
+            SELECT 
+                dependent_id,
+                TC_No,
+                birth_date,
+                name,
+                gender,
+                relation_type,
+                guest_id,
+                primary_guest_id
+            FROM dependents
+            WHERE primary_guest_id = ?
+        """
+        
+        cursor.execute(query, (guest_id,))
+        dependents = cursor.fetchall()
+        
+        if dependents:
+            return [
+                {
+                    "dependent_id": dep[0],
+                    "tc_no": dep[1],
+                    "birth_date": dep[2],
+                    "name": dep[3],
+                    "gender": dep[4],
+                    "relation_type": dep[5],
+                    "guest_id": dep[6],
+                    "primary_guest_id": dep[7]
+                }
+                for dep in dependents
+            ]
+        return None
+        
+    except sqlite3.Error as e:
+        print(f"Database error in fetch_dependent_details: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+
+
 def fetch_reservation_details(reservation_id, customer_tc):
     """
     Fetch detailed reservation information based on reservation ID and customer name.

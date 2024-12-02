@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from PIL import Image, ImageTk
 import json
 import os
-from db_control_sql import get_filtered_hotels, make_reservation, fetch_reservation_details, get_hotel_photos,cancel_reservation,make_comment_in_db,get_comments,get_room_photos
+from db_control_sql import *
 
 class MainApp:
     def __init__(self, root):
@@ -200,7 +200,59 @@ class SearchPage(ttk.Frame):
         self.setup_reservation_info(info_frame)
         self.setup_cancel_info(info_frame)
 
-    def setup_reservation_info(self,parent):
+    def get_reservation_info(self):
+        reservation_id = self.info_reservation_id_entry.get()
+        guest_tc = self.info_guest_id_entry.get()  # TC alıyoruz
+        
+        if reservation_id and guest_tc:
+            # Önce TC'den guest ID'yi bulalım
+            guest_id = fetch_guest_id_by_tc(guest_tc)
+            
+            if guest_id:
+                reservation_info = fetch_reservation_details(reservation_id, guest_tc)
+                if reservation_info:
+                    # Ana rezervasyon bilgileri
+                    info_text = f"Reservation ID: {reservation_info['reservation_id']}\n"
+                    info_text += f"Hotel: {reservation_info['hotel_name']}\n"
+                    info_text += f"Check-in: {reservation_info['check_in']}\n"
+                    info_text += f"Check-out: {reservation_info['check_out']}\n"
+                    info_text += f"Status: {'Canceled' if reservation_info['is_canceled'] else 'Active'}\n\n"
+                    
+                    # Misafir bilgileri
+                    info_text += "Guest Information:\n"
+                    info_text += f"Name: {reservation_info['guest_name']} {reservation_info['guest_surname']}\n"
+                    info_text += f"TC: {reservation_info['guest_tc']}\n"
+                    info_text += f"Phone: {reservation_info['phone_number']}\n"
+                    info_text += f"Email: {reservation_info['email']}\n\n"
+                    
+                    # Oda bilgileri
+                    info_text += "Room Information:\n"
+                    info_text += f"Room Type: {reservation_info['room_type']}\n"
+                    info_text += f"Price per Night: {reservation_info['price_per_night']}₺\n"
+                    info_text += f"Number of Guests: {reservation_info['num_guests']}\n"
+                    
+                    # Dependent bilgileri - guest_id ile arıyoruz
+                    dependent_info = fetch_dependent_details(guest_id)
+                    if dependent_info and len(dependent_info) > 0:
+                        info_text += "\nDependent Information:\n"
+                        for dependent in dependent_info:
+                            info_text += f"Name: {dependent['name']}\n"
+                            info_text += f"TC No: {dependent['tc_no']}\n"
+                            info_text += f"Birth Date: {dependent['birth_date']}\n"
+                            info_text += f"Gender: {dependent['gender']}\n"
+                            info_text += f"Relation: {dependent['relation_type']}\n"
+                            info_text += "-------------------\n"
+                    
+                    messagebox.showinfo("Reservation Info", info_text)
+                else:
+                    messagebox.showerror("Error", "Reservation not found")
+            else:
+                messagebox.showerror("Error", "Guest not found")
+        else:
+            messagebox.showerror("Error", "Please enter both Reservation ID and Guest TC")
+
+
+    def setup_reservation_info(self, parent):
         reservation_frame = ttk.LabelFrame(parent, text="📋 Reservation Info", padding=20)
         reservation_frame.pack(fill='x', pady=5)
 
@@ -213,13 +265,13 @@ class SearchPage(ttk.Frame):
 
         # Reservation ID field
         ttk.Label(info_frame, text="Reservation ID:", font=('Helvetica', 11, 'bold'), foreground='#484848').pack(pady=(0, 5))
-        self.reservation_id_entry = ttk.Entry(info_frame, width=20, font=('Helvetica', 10))
-        self.reservation_id_entry.pack(pady=(0, 10))
+        self.info_reservation_id_entry = ttk.Entry(info_frame, width=20, font=('Helvetica', 10))  # Changed variable name
+        self.info_reservation_id_entry.pack(pady=(0, 10))
 
         # Guest TC field
         ttk.Label(info_frame, text="Guest TC:", font=('Helvetica', 11, 'bold'), foreground='#484848').pack(pady=(0, 5))
-        self.guest_id_entry = ttk.Entry(info_frame, width=20, font=('Helvetica', 10))
-        self.guest_id_entry.pack(pady=(0, 10))
+        self.info_guest_id_entry = ttk.Entry(info_frame, width=20, font=('Helvetica', 10))  # Changed variable name
+        self.info_guest_id_entry.pack(pady=(0, 10))
 
         # Get Info button
         info_button = tk.Button(info_frame, text="Get Reservation Info", command=self.get_reservation_info,
@@ -227,14 +279,12 @@ class SearchPage(ttk.Frame):
                             padx=20, pady=8, relief='flat', cursor='hand2')
         info_button.pack(pady=10)
 
-
         # Info display label
         self.reservation_info_label = ttk.Label(reservation_frame, text="", justify="left",
                                             font=('Helvetica', 11), wraplength=400)
         self.reservation_info_label.pack(pady=10)
 
-
-    def setup_cancel_info(self,parent):
+    def setup_cancel_info(self, parent):
         cancel_frame = ttk.LabelFrame(parent, text="❌ Cancel Reservation", padding=20)
         cancel_frame.pack(fill='x', pady=5)
 
@@ -249,12 +299,12 @@ class SearchPage(ttk.Frame):
             foreground='#484848'
         ).pack(pady=(0, 5))
         
-        self.reservation_id_entry = ttk.Entry(
+        self.cancel_reservation_id_entry = ttk.Entry(  # Changed variable name
             input_frame,
             width=20,
             font=('Helvetica', 10)
         )
-        self.reservation_id_entry.pack(pady=(0, 10))
+        self.cancel_reservation_id_entry.pack(pady=(0, 10))
 
         ttk.Label(
             input_frame,
@@ -263,12 +313,12 @@ class SearchPage(ttk.Frame):
             foreground='#484848'
         ).pack(pady=(0, 5))
         
-        self.guest_id_entry = ttk.Entry(
+        self.cancel_guest_id_entry = ttk.Entry(  # Changed variable name
             input_frame,
             width=20,
             font=('Helvetica', 10)
         )
-        self.guest_id_entry.pack(pady=(0, 10))
+        self.cancel_guest_id_entry.pack(pady=(0, 10))
 
         cancel_button = tk.Button(
             input_frame,
@@ -293,9 +343,12 @@ class SearchPage(ttk.Frame):
         )
         self.cancel_result_label.pack(pady=10)
 
+    
     def cancel_reservation(self):
-        reservation_id = self.reservation_id_entry.get()
-        guest_id = self.guest_id_entry.get()
+        # Changed from self.reservation_id_entry to self.cancel_reservation_id_entry
+        reservation_id = self.cancel_reservation_id_entry.get()
+        # Changed from self.guest_id_entry to self.cancel_guest_id_entry
+        guest_id = self.cancel_guest_id_entry.get()
 
         if reservation_id and guest_id:
             result = cancel_reservation(reservation_id, guest_id)
@@ -304,7 +357,7 @@ class SearchPage(ttk.Frame):
             else:
                 self.cancel_result_label.configure(text=result["message"], foreground='red')
         else:
-            self.cancel_result_label.configure(text="Please enter both Reservation ID and Guest ID",foreground="red")
+            self.cancel_result_label.configure(text="Please enter both Reservation ID and Guest TC", foreground="red")
         
 
     def search_hotels(self):
@@ -353,23 +406,7 @@ class SearchPage(ttk.Frame):
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-    def get_reservation_info(self):
-        reservation_id = self.reservation_id_entry.get()
-        guest_id = self.guest_id_entry.get()
-
-        if reservation_id and guest_id:
-            reservation_info = fetch_reservation_details(reservation_id, guest_id)
-            if reservation_info:
-                info_text = f"Reservation ID: {reservation_info['reservation_id']}\n"
-                info_text += f"Hotel: {reservation_info['hotel_name']}\n"
-                info_text += f"Check-in: {reservation_info['check_in']}\n"
-                info_text += f"Check-out: {reservation_info['check_out']}\n"
-                info_text += f"Status: {'Canceled' if reservation_info['is_canceled'] else 'Active'}"
-                messagebox.showinfo("Reservation Info", info_text)
-            else:
-                messagebox.showerror("Error", "Reservation not found")
-        else:
-            messagebox.showerror("Error", "Please enter both Reservation ID and Guest ID")
+    
     
 
 
