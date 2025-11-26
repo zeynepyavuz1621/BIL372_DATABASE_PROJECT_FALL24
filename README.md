@@ -87,8 +87,11 @@ python fix_tables.py
 ```
 
 ### 3️⃣ Uygulamayı başlatın
+```bash
 python GUI.py
+```
 
+---
 
 ## 🚀 Nasıl Çalışır?
 
@@ -100,10 +103,11 @@ python GUI.py
 | Yorum Ekleme | TC & rezervasyon ID doğrulamasıyla |
 | Rezervasyon İptal | Reservation ID & TC ile iptal |
 
-
+---
 
 ## 🧭 Kullanıcı Akışı
 
+```mermaid
 flowchart TD
 A[Otel Arama] --> B[Otel Seçimi]
 B --> C[Misafir Bilgileri]
@@ -113,5 +117,5 @@ E --> F{Rezervasyon Tamamlandı}
 F --> G[Yorum Yap]
 F --> H[Rezervasyon Sorgula]
 F --> I[Rezervasyon İptal]
-
+```
 
