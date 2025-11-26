@@ -13,11 +13,7 @@ Tkinter ile modern GUI, SQLite ile güçlü veri yönetimi ve Pandas & SQLAlchem
 - [⚙️ Kurulum](#️-kurulum)
 - [🚀 Nasıl-Çalışır](#-nasıl-çalışır)
 - [🧭 Kullanıcı-Akışı](#-kullanıcı-akışı)
-- [📸 Ekran-Görüntüleri](#-ekran-görüntüleri)
-- [🤝 Katkıda-Bulunma](#-katkıda-bulunma)
-- [📄 Lisans](#-lisans)
-- [📌 Geliştirme-Önerileri](#-geliştirme-önerileri)
-- [⭐ Destek-Ol](#-destek-ol)
+
 
 ---
 
